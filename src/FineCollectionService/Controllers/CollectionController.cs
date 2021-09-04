@@ -34,7 +34,10 @@ namespace FineCollectionService.Controllers
             {
                 bool runningInK8s = Convert.ToBoolean(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") ?? "false");
                 
-                // Add workaround for when running in Docker
+                // Add dirty workaround for when running in Docker, so we use the standard Dapr secret
+                // rather than the kubernetes one
+                // This environment variable is explicitly added to the docker-compose defintiion for
+                // for this service
                 bool runningInDocker = Convert.ToBoolean(Environment.GetEnvironmentVariable("IS_DOCKER") ?? "false");
 
                 var metadata = new Dictionary<string, string> { { "namespace", "dapr-trafficcontrol" } };

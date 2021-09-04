@@ -130,7 +130,7 @@ services:
     ports:
       - "6001:6001"
     environment:
-      - "IS_DOCKER=true"
+      - "IS_DOCKER=true"    # supports a workaround in the code handling secrets for non-kuberenetes container scenarios
     depends_on:
       - dtc-redis
       - dtc-maildev
