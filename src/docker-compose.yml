@@ -1,0 +1,164 @@
+version: "3.9"
+services:
+
+#region Infrastructure services
+  dtc-redis:
+    image: redis:6-alpine
+    networks:
+      - traffic_net
+    ports:
+      - "6379:6379"
+
+  dtc-maildev:
+    image: maildev/maildev:latest
+    networks:
+      - traffic_net
+    ports:
+      - "4000:80"
+      - "4025:25"
+
+  dtc-mosquitto:
+    build:
+      context: ./Infrastructure/mosquitto
+      dockerfile: Dockerfile
+    networks:
+      - traffic_net
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+
+  dtc-rabbitmq:
+    image: rabbitmq:3-management-alpine
+    networks:
+      - traffic_net
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  dtc-zipkin:
+    image: openzipkin/zipkin-slim
+    networks:
+      - traffic_net
+    ports:
+      - "9411:9411"
+#endregion
+
+
+#region shared dapr components
+  dapr-placement:
+    image: "daprio/dapr"
+    command: ["./placement", "-port", "50000"]
+    networks:
+      - traffic_net
+
+  dapr-config:
+    build: ./dapr
+#endregion
+
+
+#region Traffic Control Service
+  tcs:
+    build: ./TrafficControlService
+    ports:
+      - "6000:6000"
+    depends_on:
+      - dtc-redis
+      - dtc-maildev
+      - dtc-mosquitto
+      - dtc-rabbitmq
+      - dtc-zipkin
+      - dapr-placement
+    networks:
+      - traffic_net
+  
+  tcs-dapr:
+    image: "daprio/daprd:edge"
+    command: [
+      "./daprd",
+      "-app-id", "tcs",
+      "-app-port", "6000",
+      "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reach via the docker DNS entry
+      "-dapr-http-port", "3600",
+      "-dapr-grpc-port", "60000",
+      "-components-path", "/components",
+      "-config", "/config/config.yaml"
+    ]
+    volumes_from:
+      - dapr-config
+    depends_on:
+      - tcs
+    network_mode: "service:tcs" # Attach the tcs-dapr service to the tcs network namespace
+#endregion
+
+#region Vehicle Registration Service
+  vrs:
+    build: ./VehicleRegistrationService
+    ports:
+      - "6002:6002"
+    depends_on:
+      - dtc-redis
+      - dtc-maildev
+      - dtc-mosquitto
+      - dtc-rabbitmq
+      - dtc-zipkin
+      - dapr-placement
+    networks:
+      - traffic_net
+  
+  vrs-dapr:
+    image: "daprio/daprd:edge"
+    command: [
+      "./daprd",
+      "-app-id", "vrs",
+      "-app-port", "6002",
+      "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reach via the docker DNS entry
+      "-dapr-http-port", "3602",
+      "-dapr-grpc-port", "60002",
+      "-components-path", "/components",
+      "-config", "/config/config.yaml"
+    ]
+    volumes_from:
+      - dapr-config
+    depends_on:
+      - vrs
+    network_mode: "service:vrs" # Attach the tcs-dapr service to the tcs network namespace
+#endregion
+
+#region Fine Collection Service
+  fcs:
+    build: ./FineCollectionService
+    ports:
+      - "6001:6001"
+    environment:
+      - "IS_DOCKER=true"
+    depends_on:
+      - dtc-redis
+      - dtc-maildev
+      - dtc-mosquitto
+      - dtc-rabbitmq
+      - dtc-zipkin
+      - dapr-placement
+    networks:
+      - traffic_net
+  
+  fcs-dapr:
+    image: "daprio/daprd:edge"
+    command: [
+      "./daprd",
+      "-app-id", "fcs",
+      "-app-port", "6001",
+      "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reach via the docker DNS entry
+      "-dapr-http-port", "3601",
+      "-dapr-grpc-port", "60001",
+      "-components-path", "/components",
+      "-config", "/config/config.yaml"
+    ]
+    volumes_from:
+      - dapr-config
+    depends_on:
+      - fcs
+    network_mode: "service:fcs" # Attach the tcs-dapr service to the tcs network namespace
+#endregion
+
+networks:
+  traffic_net:

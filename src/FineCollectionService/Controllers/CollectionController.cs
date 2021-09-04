@@ -33,8 +33,12 @@ namespace FineCollectionService.Controllers
             if (_fineCalculatorLicenseKey == null)
             {
                 bool runningInK8s = Convert.ToBoolean(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") ?? "false");
+                
+                // Add workaround for when running in Docker
+                bool runningInDocker = Convert.ToBoolean(Environment.GetEnvironmentVariable("IS_DOCKER") ?? "false");
+
                 var metadata = new Dictionary<string, string> { { "namespace", "dapr-trafficcontrol" } };
-                if (runningInK8s)
+                if (runningInK8s && !runningInDocker)
                 {
                     var k8sSecrets = daprClient.GetSecretAsync(
                         "kubernetes", "trafficcontrol-secrets", metadata).Result;
