@@ -32,7 +32,7 @@ namespace FineCollectionService
 
             services.AddSingleton<VehicleRegistrationService>(_ => 
                 new VehicleRegistrationService(DaprClient.CreateInvokeHttpClient(
-                    "vehicleregistrationservice", $"http://localhost:{daprHttpPort}")));
+                    "vrs", $"http://localhost:{daprHttpPort}")));
 
             services.AddControllers().AddDapr();
         }
