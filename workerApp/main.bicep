@@ -1,4 +1,5 @@
 param workerAppLocation string = 'centraluseuap'
+param kubeEnvironmentId string
 
 // stubs
 var ServiceBusNamespace = ''
@@ -160,11 +161,6 @@ var daprSecrets = [
   }
 ]
 
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
-  name: 'workerappslogs'
-  location: resourceGroup().location
-}
-
 resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   name: 'trafficcontrolstorage'
   location: resourceGroup().location
@@ -178,78 +174,29 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
 }
 
 
-resource kubeEnvironment 'Microsoft.Web/kubeEnvironments@2021-01-15' = {
-  name: 'endjinworkerappsenv'
-  location: workerAppLocation
-  properties: {
-    appLogsConfiguration: {
-      logAnalyticsConfiguration: {
-        customerId: logAnalytics.properties.customerId
-      }
-    }
-  }
-}
+// resource kubeEnvironment 'Microsoft.Web/kubeEnvironments@2021-01-15' = {
+//   name: 'endjinworkerappsenv'
+//   location: workerAppLocation
+//   properties: {
+//     appLogsConfiguration: {
+//       logAnalyticsConfiguration: {
+//         customerId: logAnalytics.properties.customerId
+//       }
+//     }
+//   }
+// }
 
-resource smtp_worker 'Microsoft.Web/workerApps@2021-02-01' = {
-  name: 'maildev'
-  kind: 'workerapp'
-  location: workerAppLocation
-  properties: {
-    kubeEnvironmentId: kubeEnvironment.id
-    configuration: {
-      ingress: {
-        external: false
-        targetPort: 25
-      }
-      secrets: daprSecrets
-    }
-    template: {
-      containers: [
-        {
-          image: 'maildev/maildev:latest'
-          name: 'maildev'
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
-      }
-      dapr: {
-        enabled: 'false'
-      }
-    }
-  }
-}
-
-resource traffic_control_service 'Microsoft.Web/workerApps@2021-02-01' = {
-  name: 'tcs'
-  kind: 'workerapp'
-  location: workerAppLocation
-  properties: {
-    kubeEnvironmentId: kubeEnvironment.id
-    configuration: {
-      ingress: {
-        external: false
-        targetPort: 00
-      }
-      secrets: daprSecrets
-    }
-    template: {
-      containers: [
-        {
-          image: 'maildev/maildev:latest'
-          name: 'maildev'
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
-      }
-      dapr: {
-        enabled: 'true'
-        appPort: 0
-        components: daprComponents
-      }
-    }
+module traffic_control_service 'modules/workerApp.bicep' = {
+  name: 'deployTcs'
+  scope: resourceGroup()
+  params: {
+    location: workerAppLocation
+    containerImage: 'endjin/dapr-tc-tcs:0.0.1'
+    daprComponents: {}
+    daprSecrets: {}
+    ingressIsExternal: true
+    ingressTargetPort: 6000
+    kubeEnvironmentId: kubeEnvironmentId
+    name: 'tcs'
   }
 }
