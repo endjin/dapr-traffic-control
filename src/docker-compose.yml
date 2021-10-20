@@ -52,7 +52,7 @@ services:
       - traffic_net
 
   dapr-config:
-    build: ./dapr
+    build: ./dapr-compose
 #endregion
 
 
