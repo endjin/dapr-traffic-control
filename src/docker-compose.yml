@@ -160,5 +160,15 @@ services:
     network_mode: "service:fcs" # Attach the tcs-dapr service to the tcs network namespace
 #endregion
 
+  visualsim:
+    build: ./VisualSimulation
+    ports:
+      - "5000:5000"
+    environment: []
+    depends_on:
+      - dtc-mosquitto
+    networks:
+      - traffic_net
+
 networks:
   traffic_net:
