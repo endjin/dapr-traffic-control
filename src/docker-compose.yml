@@ -52,13 +52,15 @@ services:
       - traffic_net
 
   dapr-config:
-    build: ./dapr-compose
+    build:
+      context: ./dapr-compose
 #endregion
 
 
 #region Traffic Control Service
   tcs:
-    build: ./TrafficControlService
+    build:
+      context: ./TrafficControlService
     ports:
       - "6000:6000"
     depends_on:
@@ -92,7 +94,8 @@ services:
 
 #region Vehicle Registration Service
   vrs:
-    build: ./VehicleRegistrationService
+    build:
+      context: ./VehicleRegistrationService
     ports:
       - "6002:6002"
     depends_on:
@@ -126,7 +129,8 @@ services:
 
 #region Fine Collection Service
   fcs:
-    build: ./FineCollectionService
+    build:
+      context: ./FineCollectionService
     ports:
       - "6001:6001"
     environment:
@@ -161,7 +165,8 @@ services:
 #endregion
 
   visualsim:
-    build: ./VisualSimulation
+    build:
+      context: ./VisualSimulation
     ports:
       - "5000:5000"
     environment: []
