@@ -61,7 +61,7 @@ services:
 
 
 #region Traffic Control Service
-  tcs:
+  trafficcontrolservice:
     build:
       context: ./TrafficControlService
     ports:
@@ -76,11 +76,11 @@ services:
     networks:
       - traffic_net
   
-  tcs-dapr:
+  trafficcontrolservice-dapr:
     image: "daprio/daprd:edge"
     command: [
       "./daprd",
-      "-app-id", "tcs",
+      "-app-id", "trafficcontrolservice",
       "-app-port", "6000",
       "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reach via the docker DNS entry
       "-dapr-http-port", "3600",
@@ -91,12 +91,12 @@ services:
     volumes_from:
       - dapr-config
     depends_on:
-      - tcs
-    network_mode: "service:tcs" # Attach the tcs-dapr service to the tcs network namespace
+      - trafficcontrolservice
+    network_mode: "service:trafficcontrolservice" # Attach the trafficcontrolservice-dapr service to the trafficcontrolservice network namespace
 #endregion
 
 #region Vehicle Registration Service
-  vrs:
+  vehicleregistrationservice:
     build:
       context: ./VehicleRegistrationService
     ports:
@@ -111,11 +111,11 @@ services:
     networks:
       - traffic_net
   
-  vrs-dapr:
+  vehicleregistrationservice-dapr:
     image: "daprio/daprd:edge"
     command: [
       "./daprd",
-      "-app-id", "vrs",
+      "-app-id", "vehicleregistrationservice",
       "-app-port", "6002",
       "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reach via the docker DNS entry
       "-dapr-http-port", "3602",
@@ -126,12 +126,12 @@ services:
     volumes_from:
       - dapr-config
     depends_on:
-      - vrs
-    network_mode: "service:vrs" # Attach the tcs-dapr service to the tcs network namespace
+      - vehicleregistrationservice
+    network_mode: "service:vehicleregistrationservice" # Attach the vehicleregistrationservice-dapr service to the vehicleregistrationservice network namespace
 #endregion
 
 #region Fine Collection Service
-  fcs:
+  finecollectionservice:
     build:
       context: ./FineCollectionService
     ports:
@@ -148,11 +148,11 @@ services:
     networks:
       - traffic_net
   
-  fcs-dapr:
+  finecollectionservice-dapr:
     image: "daprio/daprd:edge"
     command: [
       "./daprd",
-      "-app-id", "fcs",
+      "-app-id", "finecollectionservice",
       "-app-port", "6001",
       "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reach via the docker DNS entry
       "-dapr-http-port", "3601",
@@ -163,8 +163,8 @@ services:
     volumes_from:
       - dapr-config
     depends_on:
-      - fcs
-    network_mode: "service:fcs" # Attach the tcs-dapr service to the tcs network namespace
+      - finecollectionservice
+    network_mode: "service:finecollectionservice" # Attach the finecollectionservice-dapr service to the finecollectionservice network namespace
 #endregion
 
 #region Front-End Apps

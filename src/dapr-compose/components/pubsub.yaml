@@ -20,5 +20,5 @@ spec:
   - name: concurrency
     value: parallel
 scopes:
-  - tcs
-  - fcs
+  - trafficcontrolservice
+  - finecollectionservice
