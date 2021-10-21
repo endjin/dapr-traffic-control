@@ -32,16 +32,13 @@ namespace FineCollectionService.Controllers
             // set finecalculator component license-key
             if (_fineCalculatorLicenseKey == null)
             {
-                bool runningInK8s = Convert.ToBoolean(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") ?? "false");
-                
-                // Add dirty workaround for when running in Docker, so we use the standard Dapr secret
-                // rather than the kubernetes one
-                // This environment variable is explicitly added to the docker-compose defintiion for
-                // for this service
-                bool runningInDocker = Convert.ToBoolean(Environment.GetEnvironmentVariable("IS_DOCKER") ?? "false");
+                bool runningInContainer = Convert.ToBoolean(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") ?? "false");
+                // Use a more specific check to determine whether we're running in k8s and not just in docker
+                // ref: https://kubernetes.io/docs/concepts/services-networking/connect-applications-service/#environment-variables
+                bool runningInK8s = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("KUBERNETES_SERVICE_HOST"));
 
                 var metadata = new Dictionary<string, string> { { "namespace", "dapr-trafficcontrol" } };
-                if (runningInK8s && !runningInDocker)
+                if (runningInContainer && runningInK8s)
                 {
                     var k8sSecrets = daprClient.GetSecretAsync(
                         "kubernetes", "trafficcontrol-secrets", metadata).Result;

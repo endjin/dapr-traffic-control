@@ -57,6 +57,8 @@ services:
   dapr-config:
     build:
       context: ./dapr-compose
+    networks:
+      - traffic_net
 #endregion
 
 
@@ -136,8 +138,6 @@ services:
       context: ./FineCollectionService
     ports:
       - "6001:6001"
-    environment:
-      - "IS_DOCKER=true"    # supports a workaround in the code handling secrets for non-kuberenetes container scenarios
     depends_on:
       - dtc-redis
       - dtc-maildev
