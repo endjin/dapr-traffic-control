@@ -1,1 +1,3 @@
-mosquitto.conf      eol=lf
+* text=auto
+
+mosquitto.conf text eol=lf
