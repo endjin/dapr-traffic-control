@@ -20,7 +20,6 @@ services:
   dtc-mosquitto:
     build:
       context: ./Infrastructure/mosquitto
-      dockerfile: Dockerfile
     networks:
       - traffic_net
     ports:
@@ -84,7 +83,7 @@ services:
       "./daprd",
       "-app-id", "trafficcontrolservice",
       "-app-port", "6000",
-      "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reach via the docker DNS entry
+      "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reached via the docker DNS entry
       "-dapr-http-port", "3600",
       "-dapr-grpc-port", "60000",
       "-components-path", "/components",
@@ -119,7 +118,7 @@ services:
       "./daprd",
       "-app-id", "vehicleregistrationservice",
       "-app-port", "6002",
-      "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reach via the docker DNS entry
+      "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reached via the docker DNS entry
       "-dapr-http-port", "3602",
       "-dapr-grpc-port", "60002",
       "-components-path", "/components",
@@ -154,7 +153,7 @@ services:
       "./daprd",
       "-app-id", "finecollectionservice",
       "-app-port", "6001",
-      "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reach via the docker DNS entry
+      "-placement-host-address", "dapr-placement:50000", # Dapr's placement service can be reached via the docker DNS entry
       "-dapr-http-port", "3601",
       "-dapr-grpc-port", "60001",
       "-components-path", "/components",
@@ -167,38 +166,16 @@ services:
     network_mode: "service:finecollectionservice" # Attach the finecollectionservice-dapr service to the finecollectionservice network namespace
 #endregion
 
-#region Front-End Apps
-  #
-  # Uncomment one of the containers below if you wish to run the whole solution
-  # via a simple 'docker-compose up' command.
-  #
-  # In their commented-out state they can be launched from within Visual Studio
-  # by starting the main 'Docker Compose' debugging session and then starting a
-  # debug session on one of these projects via Solution Explorer.  The application
-  # will be launched locally and will connect to the backend services via the ports
-  # exposed by Docker.
-  #
-  # visualsim:
-  #   build:
-  #     context: ./VisualSimulation
-  #   ports:
-  #     - "5000:5000"
-  #   depends_on:
-  #     - dtc-mosquitto
-  #   networks:
-  #     - traffic_net
-
-  # clisim:
-  #   build:
-  #     context: ./Simulation
-  #   ports: []
-  #   environment:
-  #     - MQTT_HOST=dtc-mosquitto     # when running within Docker, we won't be able to reference mosquitto via the default 'localhost' setting
-  #   depends_on:
-  #     - dtc-mosquitto
-  #   networks:
-  #     - traffic_net
-#endregion
+  visualsimulation:
+    build:
+      context: ./VisualSimulation
+    image: visualsimulation
+    ports:
+      - "5000:5000"
+    depends_on:
+      - dtc-mosquitto
+    networks:
+      - traffic_net
 
 networks:
   traffic_net:
