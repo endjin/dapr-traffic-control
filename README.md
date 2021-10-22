@@ -211,7 +211,7 @@ Execute the following steps to run the sample application on Docker:
 
 1. Open a new command-shell
 
-1. Change the current folder to the `src` folder of this repo.
+1. Change the current folder to the `src` folder of this repo
 
 1. Run the `docker-compose up -d` command to build the images (if not already built) and start the containers
 
@@ -227,7 +227,7 @@ To stop the application and remove everything from the Docker, execute the `dock
 
 The docker compose hosting scenario can also be used to debug the application using Visual Studio:
 
-1. Ensure none of the application containers are already running in Docker
+1. Ensure none of the application containers are already running in Docker (to avoid network port conflicts)
 
 1. Open the solution file `src/DaprTrafficControl.sln` in Visual Studio 2019 or later
 
